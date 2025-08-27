@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Predict Readmission</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="card shadow-lg p-4">
+        <h3 class="text-center mb-4">🧾 Hospital Readmission Prediction Form</h3>
+        <form action="/predict" method="post">
+
+            <div class="mb-3">
+                <label class="form-label">Number of Inpatient Visits</label>
+                <input type="number" name="n_inpatient" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Number of Lab Procedures</label>
+                <input type="number" name="n_lab_procedures" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Number of Emergency Visits</label>
+                <input type="number" name="n_emergency" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Age Category</label>
+                <select name="age_cat" class="form-select" required>
+                    <option>early-middle age</option>
+                    <option>late-middle age</option>
+                    <option>mid-old age</option>
+                    <option>senior-old age</option>
+                    <option>very senior-old</option>
+                    <option>centenarians</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Medical Specialty</label>
+                <select name="medical_specialty" class="form-select" required>
+                    <option>Cardiology</option>
+                    <option>Endocrinology</option>
+                    <option>Family/GeneralPractice</option>
+                    <option>InternalMedicine</option>
+                    <option>Nephrology</option>
+                    <option>Neurology</option>
+                    <option>Obstetrics</option>
+                    <option>Orthopedics</option>
+                    <option>Pediatrics</option>
+                    <option>Psychiatry</option>
+                    <option>Surgery</option>
+                    <option>Other</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Medication Change</label>
+                <select name="med_change" class="form-select" required>
+                    <option>No</option>
+                    <option>Yes</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Diabetes Medication</label>
+                <select name="diabetes_med" class="form-select" required>
+                    <option>No</option>
+                    <option>Yes</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Predict 🔮</button>
+        </form>
+        <div class="text-center mt-3">
+            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-secondary">⬅ Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

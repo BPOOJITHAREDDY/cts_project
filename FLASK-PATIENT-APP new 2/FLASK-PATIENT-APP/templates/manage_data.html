@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Management - Patient Management System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #169630;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --success: #27ae60;
+            --dark: #2c3e50;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .navbar {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background-color: #128028;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            border: none;
+        }
+        
+        .btn-warning {
+            background-color: #f39c12;
+            border: none;
+        }
+        
+        .data-section {
+            padding: 20px;
+            margin-bottom: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #fafafa;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--primary);
+            background-color: #e8f5e9;
+        }
+        
+        .file-list {
+            margin-top: 20px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .file-icon {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .progress {
+            height: 8px;
+            margin-top: 5px;
+        }
+        
+        .history-item {
+            border-left: 3px solid var(--primary);
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 15px;
+            height: 100%;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .stats-card i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .stats-card h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <span class="navbar-brand">
+                    <i class="fas fa-user-md me-2"></i>
+                    Patient Management System
+                </span>
+                <div class="navbar-nav ms-auto">
+                    <span class="nav-text me-3">Welcome, Admin!</span>
+                    <div class="btn-group">
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-home me-1"></i> Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-database me-2"></i> User Data Management</h2>
+            <div>
+                <span class="badge bg-secondary">Last export: Today, 10:30 AM</span>
+            </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <i class="fas fa-users"></i>
+                    <h3>{{ users|length }}</h3>
+                    <p>Total Users</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <i class="fas fa-user-injured"></i>
+                    <h3>{{ patient_count }}</h3>
+                    <p>Patient Users</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <i class="fas fa-user-shield"></i>
+                    <h3>{{ admin_count }}</h3>
+                    <p>Admin Users</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Export Section -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-file-export me-2"></i>
+                            Export User Data
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Export user records from the 'users' table to CSV format.</p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Data to Export:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="exportAll" checked>
+                                <label class="form-check-label" for="exportAll">
+                                    All User Records
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="exportPatients">
+                                <label class="form-check-label" for="exportPatients">
+                                    Patient Users Only
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="exportAdmins">
+                                <label class="form-check-label" for="exportAdmins">
+                                    Admin Users Only
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Export Format:</label>
+                            <select class="form-select" id="exportFormat">
+                                <option value="csv" selected>CSV (Comma Separated Values)</option>
+                                <option value="json">JSON</option>
+                                <option value="excel">Excel Format</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" id="exportBtn">
+                                <i class="fas fa-download me-2"></i> Export User Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Import Section -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-file-import me-2"></i>
+                            Import User Data
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Import user records to the 'users' table from CSV files.</p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Required CSV Format:</label>
+                            <div class="alert alert-info py-2">
+                                <small>
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    CSV should include: username, email, password_hash, user_type
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <h5>Drop CSV file here or click to browse</h5>
+                            <p class="text-muted">Supports .csv files with user data</p>
+                            <input type="file" id="fileInput" accept=".csv" hidden>
+                            <button class="btn btn-outline-primary mt-2" id="browseBtn">Browse Files</button>
+                        </div>
+                        
+                        <div class="file-list" id="fileList">
+                            <!-- Files will be listed here after selection -->
+                        </div>
+                        
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="overwriteRecords">
+                            <label class="form-check-label" for="overwriteRecords">
+                                Overwrite existing users with matching usernames
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-3">
+                            <button class="btn btn-primary" id="importBtn" disabled>
+                                <i class="fas fa-upload me-2"></i> Import User Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Data Preview -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Current User Data ({{ users|length }} records)
+                </h5>
+                <small>From 'users' table</small>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>User Type</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="badge {% if user.user_type == 'admin' %}bg-danger{% else %}bg-success{% endif %}">
+                                        {{ user.user_type }}
+                                    </span>
+                                </td>
+                                <td>{{ user.created_at if user.created_at else 'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Import History -->
+        <div class="card mt-4">
+            
+        </div>
+    </div>
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // File upload handling
+            $('#browseBtn').click(function() {
+                $('#fileInput').click();
+            });
+            
+            $('#uploadArea').click(function() {
+                $('#fileInput').click();
+            });
+            
+            $('#fileInput').change(function(e) {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    displayFile(file);
+                    $('#importBtn').prop('disabled', false);
+                }
+            });
+            
+            // Drag and drop handling
+            $('#uploadArea').on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('dragover');
+            });
+            
+            $('#uploadArea').on('dragleave', function() {
+                $(this).removeClass('dragover');
+            });
+            
+            $('#uploadArea').on('drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('dragover');
+                
+                if (e.originalEvent.dataTransfer.files.length) {
+                    const file = e.originalEvent.dataTransfer.files[0];
+                    displayFile(file);
+                    $('#importBtn').prop('disabled', false);
+                }
+            });
+            
+            // Export button handling
+           // Export button handling - UPDATED VERSION
+$('#exportBtn').click(function() {
+    // Determine export type
+    let exportType = "all";
+    if ($('#exportPatients').is(':checked') && !$('#exportAdmins').is(':checked')) {
+        exportType = "patients";
+    } else if ($('#exportAdmins').is(':checked') && !$('#exportPatients').is(':checked')) {
+        exportType = "admins";
+    }
+    
+    const format = $('#exportFormat').val();
+    
+    // Show loading state
+    $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Exporting...');
+    $(this).prop('disabled', true);
+    
+    // Get the user data from the table
+    let usersData = [];
+    $('table tbody tr').each(function() {
+        const id = $(this).find('td:eq(0)').text();
+        const username = $(this).find('td:eq(1)').text();
+        const email = $(this).find('td:eq(2)').text();
+        const userType = $(this).find('td:eq(3) .badge').text();
+        const created = $(this).find('td:eq(4)').text();
+        
+        // Apply filters based on export type
+        if (exportType === "all" || 
+            (exportType === "patients" && userType === "patient") ||
+            (exportType === "admins" && userType === "admin")) {
+            usersData.push({
+                id, username, email, user_type: userType, created_at: created
+            });
+        }
+    });
+    
+    // Generate and download the file based on format
+    if (format === 'csv') {
+        exportToCSV(usersData, `users_export_${new Date().toISOString().slice(0,10)}.csv`);
+    } else if (format === 'json') {
+        exportToJSON(usersData, `users_export_${new Date().toISOString().slice(0,10)}.json`);
+    } else if (format === 'excel') {
+        // For Excel format, we'll create a CSV that Excel can open
+        exportToCSV(usersData, `users_export_${new Date().toISOString().slice(0,10)}.csv`);
+    }
+    
+    // Reset button state after a short delay
+    setTimeout(function() {
+        $('#exportBtn').html('<i class="fas fa-download me-2"></i> Export User Data');
+        $('#exportBtn').prop('disabled', false);
+    }, 1000);
+});
+
+// Function to export data as CSV
+function exportToCSV(data, filename) {
+    if (data.length === 0) {
+        alert('No data to export with the selected filters!');
+        return;
+    }
+    
+    // Extract headers
+    const headers = Object.keys(data[0]);
+    
+    // Create CSV content
+    let csvContent = headers.join(',') + '\n';
+    
+    data.forEach(row => {
+        const values = headers.map(header => {
+            // Escape quotes and wrap in quotes if contains commas
+            let value = row[header] || '';
+            if (typeof value === 'string' && value.includes(',')) {
+                value = `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+        });
+        csvContent += values.join(',') + '\n';
+    });
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Function to export data as JSON
+function exportToJSON(data, filename) {
+    if (data.length === 0) {
+        alert('No data to export with the selected filters!');
+        return;
+    }
+    
+    const jsonContent = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+            
+            // Import button handling
+            $('#importBtn').click(function() {
+                // Simulate import process
+                $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Importing...');
+                $(this).prop('disabled', true);
+                
+                // Simulate progress
+                const progressBar = $('#fileList .progress-bar');
+                progressBar.css('width', '30%');
+                
+                setTimeout(function() {
+                    progressBar.css('width', '70%');
+                }, 1000);
+                
+                setTimeout(function() {
+                    progressBar.css('width', '100%');
+                    $('#importBtn').html('<i class="fas fa-upload me-2"></i> Import User Data');
+                    $('#importBtn').prop('disabled', false);
+                    
+                    // Show success message
+                    alert('User data imported successfully! 5 records were processed.');
+                }, 2500);
+            });
+            
+            // Display selected file
+            function displayFile(file) {
+                if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                    alert('Please select a CSV file.');
+                    return;
+                }
+                
+                const fileSize = (file.size / (1024 * 1024)).toFixed(2); // MB
+                
+                $('#fileList').html(`
+                    <div class="file-item">
+                        <div class="file-info">
+                            <span class="file-icon"><i class="fas fa-file-csv"></i></span>
+                            <div>
+                                <div>${file.name}</div>
+                                <small class="text-muted">${fileSize} MB</small>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger remove-file">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `);
+                
+                // Remove file handler
+                $('.remove-file').click(function() {
+                    $('#fileList').empty();
+                    $('#fileInput').val('');
+                    $('#importBtn').prop('disabled', true);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
